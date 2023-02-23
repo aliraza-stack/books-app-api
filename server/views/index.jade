@@ -1,0 +1,15 @@
+extends layout
+
+block content
+	div(class='container')
+		div(class='card mb-3')
+			div(class='card-header')
+				h1= title
+				p Welcome to #{title}
+
+		p(class='alert alert-secondary') This is a simple app that uses GraphQL to query a MongoDB database and display the results in a React app.
+
+		h3 These are the links to the other pages:
+
+		a(href='/graphql' class='graph-link btn btn-primary') GraphQL view
+		a(href='localhost:3001' class='graph-link btn btn-primary mx-3') React App view

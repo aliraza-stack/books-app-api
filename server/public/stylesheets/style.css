@@ -1,0 +1,10 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+.graph-link {
+  text-decoration: none;
+  font-size: large;
+  font-weight: bold;
+}
