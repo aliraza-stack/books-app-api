@@ -19,12 +19,44 @@ const GET_BOOK = gql`
 	}
 `;
 
+// list of comments
+const GET_BOOK_COMMENTS = gql`
+  query GetBookComments($bookId: ID!) {
+    book(id: $bookId) {
+      id
+      title
+      author
+      comments {
+        id
+        text
+        createdAt
+      }
+    }
+  }
+`;
+
+
 const DELETE_BOOK = gql`
   mutation removeBook($id: String!) {
 	removeBook(id:$id) {
 	  _id
 	}
   }
+`;
+
+// create comment mutation
+const ADD_COMMENT = gql`
+  mutation CreateComment($text: String!, $bookId: ID!) {
+  createComment(text: $text, bookId: $bookId) {
+    _id
+    text
+    book {
+      _id
+      title
+    }
+    createdAt
+  }
+}
 `;
 
 class Show extends Component {
@@ -76,6 +108,72 @@ render() {
 											{loading && <p>Loading...</p>}
 											{error && <p>Error :( Please try again</p>}
 										</div>
+									)}
+								</Mutation>
+							</div>
+						</div>
+
+						{/* Lsit of comments */}
+						<div className="card mt-3">
+							<div className="card-header">
+								<h3 className="card-title">Comments</h3>
+							</div>
+							<div className="card-body">
+								<Query query={GET_BOOK_COMMENTS} variables={{ bookId: this.props.match.params.id }}>
+									{({ loading, error, data }) => {
+										if (loading) return <div className="container my-5"><h3>Loading...</h3></div>;
+										if (error) return <div className="container my-5"><h3>Error! {error.message}</h3></div>;
+										if (!data.comments.length) return <div className="container my-5"><h3>No comments yet.</h3></div>
+										return (
+											<div className="card">
+												<div className="card-body">
+													{data.comments.map(comment => (
+														<div key={comment._id}>
+															<p>{comment.text}</p>
+															<p>{comment.createdAt}</p>
+														</div>
+													))}
+												</div>
+											</div>
+										);
+									}}
+								</Query>
+							</div>
+						</div>
+
+
+
+
+						<div className="card mt-3">
+							<div className="card-header">
+								<h3 className="card-title">Comments</h3>
+								<Mutation
+									mutation={ADD_COMMENT}
+									update={(cache, { data: { createComment } }) => {
+									const { book } = cache.readQuery({ query: GET_BOOK, variables: { bookId: this.props.match.params.id } });
+										cache.writeQuery({
+											query: GET_BOOK,
+											variables: { bookId: this.props.match.params.id },
+											data: { book: book.concat([createComment]) },
+										});
+									}}>
+									{createComment => (
+										<form
+											onSubmit={e => {
+												e.preventDefault();
+												createComment({
+													variables: { text: this.text.value, bookId: data.book._id }
+												});
+												this.text.value = '';
+											}}>
+											<div className="form-group">
+												<label htmlFor="text">Comment:</label>
+												<input type="text" className="form-control" name="text" ref={node => {
+													this.text = node;
+												}} placeholder="Enter comment" />
+											</div>
+											<button type="submit" className="btn btn-success">Submit</button>
+										</form>
 									)}
 								</Mutation>
 							</div>
